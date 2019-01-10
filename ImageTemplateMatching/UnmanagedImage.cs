@@ -6,13 +6,13 @@
 // contacts@aforgenet.com
 //
 
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+
 namespace ImageTemplateMatching
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
-    using System.Collections.Generic;
-
     /// <summary>
     /// Image in unmanaged memory.
     /// </summary>
@@ -63,55 +63,41 @@ namespace ImageTemplateMatching
     public class UnmanagedImage : IDisposable
     {
         // pointer to image data in unmanaged memory
-        private IntPtr imageData;
+        private IntPtr _imageData;
         // image size
-        private int width, height;
+        private int _width;
+        private int _height;
         // image stride (line size)
-        private int stride;
+        private int _stride;
         // image pixel format
-        private PixelFormat pixelFormat;
+        private PixelFormat _pixelFormat;
         // flag which indicates if the image should be disposed or not
-        private bool mustBeDisposed = false;
+        private bool _mustBeDisposed = false;
 
         /// <summary>
         /// Pointer to image data in unmanaged memory.
         /// </summary>
-        public IntPtr ImageData
-        {
-            get { return imageData; }
-        }
+        public IntPtr ImageData => _imageData;
 
         /// <summary>
         /// Image width in pixels.
         /// </summary>
-        public int Width
-        {
-            get { return width; }
-        }
+        public int Width => _width;
 
         /// <summary>
         /// Image height in pixels.
         /// </summary>
-        public int Height
-        {
-            get { return height; }
-        }
+        public int Height => _height;
 
         /// <summary>
         /// Image stride (line size in bytes).
         /// </summary>
-        public int Stride
-        {
-            get { return stride; }
-        }
+        public int Stride => _stride;
 
         /// <summary>
         /// Image pixel format.
         /// </summary>
-        public PixelFormat PixelFormat
-        {
-            get { return pixelFormat; }
-        }
+        public PixelFormat PixelFormat => _pixelFormat;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnmanagedImage"/> class.
@@ -127,13 +113,13 @@ namespace ImageTemplateMatching
         /// and correspond to unmanaged memory buffer. If some attributes are specified incorrectly,
         /// this may lead to exceptions working with the unmanaged memory.</note></para></remarks>
         /// 
-        public UnmanagedImage( IntPtr imageData, int width, int height, int stride, PixelFormat pixelFormat )
+        public UnmanagedImage(IntPtr imageData, int width, int height, int stride, PixelFormat pixelFormat)
         {
-            this.imageData   = imageData;
-            this.width       = width;
-            this.height      = height;
-            this.stride      = stride;
-            this.pixelFormat = pixelFormat;
+            _imageData = imageData;
+            _width = width;
+            _height = height;
+            _stride = stride;
+            _pixelFormat = pixelFormat;
         }
 
         /// <summary>
@@ -146,22 +132,22 @@ namespace ImageTemplateMatching
         /// copy of managed image. This means that managed image must stay locked for the time of using the instance
         /// of unamanged image.</note></remarks>
         /// 
-        public UnmanagedImage( BitmapData bitmapData )
+        public UnmanagedImage(BitmapData bitmapData)
         {
-            this.imageData   = bitmapData.Scan0;
-            this.width       = bitmapData.Width;
-            this.height      = bitmapData.Height;
-            this.stride      = bitmapData.Stride;
-            this.pixelFormat = bitmapData.PixelFormat;
+            _imageData = bitmapData.Scan0;
+            _width = bitmapData.Width;
+            _height = bitmapData.Height;
+            _stride = bitmapData.Stride;
+            _pixelFormat = bitmapData.PixelFormat;
         }
 
         /// <summary>
         /// Destroys the instance of the <see cref="UnmanagedImage"/> class.
         /// </summary>
         /// 
-        ~UnmanagedImage( )
+        ~UnmanagedImage()
         {
-            Dispose( false );
+            Dispose(false);
         }
 
         /// <summary>
@@ -176,11 +162,11 @@ namespace ImageTemplateMatching
         /// this method does not free unmanaged memory.</note></par>
         /// </remarks>
         /// 
-        public void Dispose( )
+        public void Dispose()
         {
-            Dispose( true );
+            Dispose(true);
             // remove me from the Finalization queue 
-            GC.SuppressFinalize( this );
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -189,18 +175,18 @@ namespace ImageTemplateMatching
         /// 
         /// <param name="disposing">Indicates if disposing was initiated manually.</param>
         /// 
-        protected virtual void Dispose( bool disposing )
+        protected virtual void Dispose(bool disposing)
         {
-            if ( disposing )
+            if (disposing)
             {
                 // dispose managed resources
             }
             // free image memory if the image was allocated using this class
-            if ( ( mustBeDisposed ) && ( imageData != IntPtr.Zero ) )
+            if ((_mustBeDisposed) && (_imageData != IntPtr.Zero))
             {
-                System.Runtime.InteropServices.Marshal.FreeHGlobal( imageData );
-                System.GC.RemoveMemoryPressure( stride * height );
-                imageData = IntPtr.Zero;
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(_imageData);
+                System.GC.RemoveMemoryPressure(_stride * _height);
+                _imageData = IntPtr.Zero;
             }
         }
 
@@ -212,16 +198,18 @@ namespace ImageTemplateMatching
         /// 
         /// <remarks><para>The method does complete cloning of the object.</para></remarks>
         /// 
-        public UnmanagedImage Clone( )
+        public UnmanagedImage Clone()
         {
             // allocate memory for the image
-            IntPtr newImageData = System.Runtime.InteropServices.Marshal.AllocHGlobal( stride * height );
-            System.GC.AddMemoryPressure( stride * height );
+            var newImageData = System.Runtime.InteropServices.Marshal.AllocHGlobal(_stride * _height);
+            System.GC.AddMemoryPressure(_stride * _height);
 
-            UnmanagedImage newImage = new UnmanagedImage( newImageData, width, height, stride, pixelFormat );
-            newImage.mustBeDisposed = true;
+            var newImage = new UnmanagedImage(newImageData, _width, _height, _stride, _pixelFormat)
+            {
+                _mustBeDisposed = true
+            };
 
-            ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( newImageData, imageData, stride * height );
+            SystemTools.CopyUnmanagedMemory(newImageData, _imageData, _stride * _height);
 
             return newImage;
         }
@@ -237,37 +225,37 @@ namespace ImageTemplateMatching
         /// 
         /// <exception cref="InvalidImagePropertiesException">Destination image has different size or pixel format.</exception>
         /// 
-        public void Copy( UnmanagedImage destImage )
+        public void Copy(UnmanagedImage destImage)
         {
             if (
-                ( width != destImage.width ) || ( height != destImage.height ) ||
-                ( pixelFormat != destImage.pixelFormat ) )
+                (_width != destImage._width) || (_height != destImage._height) ||
+                (_pixelFormat != destImage._pixelFormat))
             {
-                throw new InvalidImagePropertiesException( "Destination image has different size or pixel format." );
+                throw new InvalidImagePropertiesException("Destination image has different size or pixel format.");
             }
 
-            if ( stride == destImage.stride )
+            if (_stride == destImage._stride)
             {
                 // copy entire image
-                ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( destImage.imageData, imageData, stride * height );
+                SystemTools.CopyUnmanagedMemory(destImage._imageData, _imageData, _stride * _height);
             }
             else
             {
                 unsafe
                 {
-                    int dstStride = destImage.stride;
-                    int copyLength = ( stride < dstStride ) ? stride : dstStride;
+                    var dstStride = destImage._stride;
+                    var copyLength = (_stride < dstStride) ? _stride : dstStride;
 
-                    byte* src = (byte*) imageData.ToPointer( );
-                    byte* dst = (byte*) destImage.imageData.ToPointer( );
+                    var src = (byte*)_imageData.ToPointer();
+                    var dst = (byte*)destImage._imageData.ToPointer();
 
                     // copy line by line
-                    for ( int i = 0; i < height; i++ )
+                    for (var i = 0; i < _height; i++)
                     {
-                        ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( dst, src, copyLength );
+                        SystemTools.CopyUnmanagedMemory(dst, src, copyLength);
 
                         dst += dstStride;
-                        src += stride;
+                        src += _stride;
                     }
                 }
             }
@@ -304,12 +292,12 @@ namespace ImageTemplateMatching
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format was specified.</exception>
         /// <exception cref="InvalidImagePropertiesException">Invalid image size was specified.</exception>
         /// 
-        public static UnmanagedImage Create( int width, int height, PixelFormat pixelFormat )
+        public static UnmanagedImage Create(int width, int height, PixelFormat pixelFormat)
         {
-            int bytesPerPixel = 0 ;
+            var bytesPerPixel = 0;
 
             // calculate bytes per pixel
-            switch ( pixelFormat )
+            switch (pixelFormat)
             {
                 case PixelFormat.Format8bppIndexed:
                     bytesPerPixel = 1;
@@ -333,30 +321,32 @@ namespace ImageTemplateMatching
                     bytesPerPixel = 8;
                     break;
                 default:
-                    throw new UnsupportedImageFormatException( "Can not create image with specified pixel format." );
+                    throw new UnsupportedImageFormatException("Can not create image with specified pixel format.");
             }
 
             // check image size
-            if ( ( width <= 0 ) || ( height <= 0 ) )
+            if ((width <= 0) || (height <= 0))
             {
-                throw new InvalidImagePropertiesException( "Invalid image size specified." );
+                throw new InvalidImagePropertiesException("Invalid image size specified.");
             }
 
             // calculate stride
-            int stride = width * bytesPerPixel;
+            var stride = width * bytesPerPixel;
 
-            if ( stride % 4 != 0 )
+            if (stride % 4 != 0)
             {
-                stride += ( 4 - ( stride % 4 ) );
+                stride += (4 - (stride % 4));
             }
 
             // allocate memory for the image
-            IntPtr imageData = System.Runtime.InteropServices.Marshal.AllocHGlobal( stride * height );
-            ImageTemplateMatching.SystemTools.SetUnmanagedMemory( imageData, 0, stride * height );
-            System.GC.AddMemoryPressure( stride * height );
+            var imageData = System.Runtime.InteropServices.Marshal.AllocHGlobal(stride * height);
+            SystemTools.SetUnmanagedMemory(imageData, 0, stride * height);
+            System.GC.AddMemoryPressure(stride * height);
 
-            UnmanagedImage image = new UnmanagedImage( imageData, width, height, stride, pixelFormat );
-            image.mustBeDisposed = true;
+            var image = new UnmanagedImage(imageData, width, height, stride, pixelFormat)
+            {
+                _mustBeDisposed = true
+            };
 
             return image;
         }
@@ -371,9 +361,9 @@ namespace ImageTemplateMatching
         /// same size and pixel format (it calls <see cref="ToManagedImage(bool)"/> specifying
         /// <see langword="true"/> for the <b>makeCopy</b> parameter).</para></remarks>
         /// 
-        public Bitmap ToManagedImage( )
+        public Bitmap ToManagedImage()
         {
-            return ToManagedImage( true );
+            return ToManagedImage(true);
         }
 
         /// <summary>
@@ -395,70 +385,70 @@ namespace ImageTemplateMatching
         /// <see cref="UnmanagedImage(IntPtr, int, int, int, PixelFormat)"/> constructor specifying some
         /// invalid parameters.</exception>
         /// 
-        public Bitmap ToManagedImage( bool makeCopy )
+        public Bitmap ToManagedImage(bool makeCopy)
         {
             Bitmap dstImage = null;
 
             try
             {
-                if ( !makeCopy )
+                if (!makeCopy)
                 {
-                    dstImage = new Bitmap( width, height, stride, pixelFormat, imageData );
-                    if ( pixelFormat == PixelFormat.Format8bppIndexed )
+                    dstImage = new Bitmap(_width, _height, _stride, _pixelFormat, _imageData);
+                    if (_pixelFormat == PixelFormat.Format8bppIndexed)
                     {
-                        Image.SetGrayscalePalette( dstImage );
+                        Image.SetGrayscalePalette(dstImage);
                     }
                 }
                 else
                 {
                     // create new image of required format
-                    dstImage = ( pixelFormat == PixelFormat.Format8bppIndexed ) ?
-                        ImageTemplateMatching.Image.CreateGrayscaleImage( width, height ) :
-                        new Bitmap( width, height, pixelFormat );
+                    dstImage = (_pixelFormat == PixelFormat.Format8bppIndexed) ?
+                        Image.CreateGrayscaleImage(_width, _height) :
+                        new Bitmap(_width, _height, _pixelFormat);
 
                     // lock destination bitmap data
-                    BitmapData dstData = dstImage.LockBits(
-                        new Rectangle( 0, 0, width, height ),
-                        ImageLockMode.ReadWrite, pixelFormat );
+                    var dstData = dstImage.LockBits(
+                        new Rectangle(0, 0, _width, _height),
+                        ImageLockMode.ReadWrite, _pixelFormat);
 
-                    int dstStride = dstData.Stride;
-                    int lineSize  = Math.Min( stride, dstStride );
+                    var dstStride = dstData.Stride;
+                    var lineSize = Math.Min(_stride, dstStride);
 
                     unsafe
                     {
-                        byte* dst = (byte*) dstData.Scan0.ToPointer( );
-                        byte* src = (byte*) imageData.ToPointer( );
+                        var dst = (byte*)dstData.Scan0.ToPointer();
+                        var src = (byte*)_imageData.ToPointer();
 
-                        if ( stride != dstStride )
+                        if (_stride != dstStride)
                         {
                             // copy image
-                            for ( int y = 0; y < height; y++ )
+                            for (var y = 0; y < _height; y++)
                             {
-                                ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( dst, src, lineSize );
+                                SystemTools.CopyUnmanagedMemory(dst, src, lineSize);
                                 dst += dstStride;
-                                src += stride;
+                                src += _stride;
                             }
                         }
                         else
                         {
-                            ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( dst, src, stride * height );
+                            SystemTools.CopyUnmanagedMemory(dst, src, _stride * _height);
                         }
                     }
 
                     // unlock destination images
-                    dstImage.UnlockBits( dstData );
+                    dstImage.UnlockBits(dstData);
                 }
 
                 return dstImage;
             }
-            catch ( Exception )
+            catch (Exception)
             {
-                if ( dstImage != null )
+                if (dstImage != null)
                 {
-                    dstImage.Dispose( );
+                    dstImage.Dispose();
                 }
 
-                throw new InvalidImagePropertiesException( "The unmanaged image has some invalid properties, which results in failure of converting it to managed image." );
+                throw new InvalidImagePropertiesException("The unmanaged image has some invalid properties, which results in failure of converting it to managed image.");
             }
         }
 
@@ -475,20 +465,20 @@ namespace ImageTemplateMatching
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of source image.</exception>
         /// 
-        public static UnmanagedImage FromManagedImage( Bitmap image )
+        public static UnmanagedImage FromManagedImage(Bitmap image)
         {
             UnmanagedImage dstImage = null;
 
-            BitmapData sourceData = image.LockBits( new Rectangle( 0, 0, image.Width, image.Height ),
-                ImageLockMode.ReadOnly, image.PixelFormat );
+            var sourceData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.ReadOnly, image.PixelFormat);
 
             try
             {
-                dstImage = FromManagedImage( sourceData );
+                dstImage = FromManagedImage(sourceData);
             }
             finally
             {
-                image.UnlockBits( sourceData );
+                image.UnlockBits(sourceData);
             }
 
             return dstImage;
@@ -508,32 +498,32 @@ namespace ImageTemplateMatching
         /// 
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of source image.</exception>
         /// 
-        public static UnmanagedImage FromManagedImage( BitmapData imageData )
+        public static UnmanagedImage FromManagedImage(BitmapData imageData)
         {
-            PixelFormat pixelFormat = imageData.PixelFormat;
+            var pixelFormat = imageData.PixelFormat;
 
             // check source pixel format
             if (
-                ( pixelFormat != PixelFormat.Format8bppIndexed ) &&
-                ( pixelFormat != PixelFormat.Format16bppGrayScale ) &&
-                ( pixelFormat != PixelFormat.Format24bppRgb ) &&
-                ( pixelFormat != PixelFormat.Format32bppRgb ) &&
-                ( pixelFormat != PixelFormat.Format32bppArgb ) &&
-                ( pixelFormat != PixelFormat.Format32bppPArgb ) &&
-                ( pixelFormat != PixelFormat.Format48bppRgb ) &&
-                ( pixelFormat != PixelFormat.Format64bppArgb ) &&
-                ( pixelFormat != PixelFormat.Format64bppPArgb ) )
+                (pixelFormat != PixelFormat.Format8bppIndexed) &&
+                (pixelFormat != PixelFormat.Format16bppGrayScale) &&
+                (pixelFormat != PixelFormat.Format24bppRgb) &&
+                (pixelFormat != PixelFormat.Format32bppRgb) &&
+                (pixelFormat != PixelFormat.Format32bppArgb) &&
+                (pixelFormat != PixelFormat.Format32bppPArgb) &&
+                (pixelFormat != PixelFormat.Format48bppRgb) &&
+                (pixelFormat != PixelFormat.Format64bppArgb) &&
+                (pixelFormat != PixelFormat.Format64bppPArgb))
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image." );
+                throw new UnsupportedImageFormatException("Unsupported pixel format of the source image.");
             }
 
             // allocate memory for the image
-            IntPtr dstImageData = System.Runtime.InteropServices.Marshal.AllocHGlobal( imageData.Stride * imageData.Height );
-            System.GC.AddMemoryPressure( imageData.Stride * imageData.Height );
+            var dstImageData = System.Runtime.InteropServices.Marshal.AllocHGlobal(imageData.Stride * imageData.Height);
+            System.GC.AddMemoryPressure(imageData.Stride * imageData.Height);
 
-            UnmanagedImage image = new UnmanagedImage( dstImageData, imageData.Width, imageData.Height, imageData.Stride, pixelFormat );
-            ImageTemplateMatching.SystemTools.CopyUnmanagedMemory( dstImageData, imageData.Scan0, imageData.Stride * imageData.Height );
-            image.mustBeDisposed = true;
+            var image = new UnmanagedImage(dstImageData, imageData.Width, imageData.Height, imageData.Stride, pixelFormat);
+            SystemTools.CopyUnmanagedMemory(dstImageData, imageData.Scan0, imageData.Stride * imageData.Height);
+            image._mustBeDisposed = true;
 
             return image;
         }
@@ -564,39 +554,39 @@ namespace ImageTemplateMatching
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image. Use Collect16bppPixelValues() method for
         /// images with 16 bpp channels.</exception>
         /// 
-        public byte[] Collect8bppPixelValues( List<IntPoint> points )
+        public byte[] Collect8bppPixelValues(List<IntPoint> points)
         {
-            int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
+            var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
 
-            if ( ( pixelFormat == PixelFormat.Format16bppGrayScale ) || ( pixelSize > 4 ) )
+            if ((_pixelFormat == PixelFormat.Format16bppGrayScale) || (pixelSize > 4))
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image. Use Collect16bppPixelValues() method for it." );
+                throw new UnsupportedImageFormatException("Unsupported pixel format of the source image. Use Collect16bppPixelValues() method for it.");
             }
 
-            byte[] pixelValues = new byte[points.Count * ( ( pixelFormat == PixelFormat.Format8bppIndexed ) ? 1 : 3 )];
+            var pixelValues = new byte[points.Count * ((_pixelFormat == PixelFormat.Format8bppIndexed) ? 1 : 3)];
 
             unsafe
             {
-                byte* basePtr = (byte*) imageData.ToPointer( );
+                var basePtr = (byte*)_imageData.ToPointer();
                 byte* ptr;
 
-                if ( pixelFormat == PixelFormat.Format8bppIndexed )
+                if (_pixelFormat == PixelFormat.Format8bppIndexed)
                 {
-                    int i = 0;
+                    var i = 0;
 
-                    foreach ( IntPoint point in points )
+                    foreach (var point in points)
                     {
-                        ptr = basePtr + stride * point.Y + point.X;
+                        ptr = basePtr + _stride * point.Y + point.X;
                         pixelValues[i++] = *ptr;
                     }
                 }
                 else
                 {
-                    int i = 0;
+                    var i = 0;
 
-                    foreach ( IntPoint point in points )
+                    foreach (var point in points)
                     {
-                        ptr = basePtr + stride * point.Y + point.X * pixelSize;
+                        ptr = basePtr + _stride * point.Y + point.X * pixelSize;
                         pixelValues[i++] = ptr[RGB.R];
                         pixelValues[i++] = ptr[RGB.G];
                         pixelValues[i++] = ptr[RGB.B];
@@ -613,9 +603,9 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns list of points, which have other than black color.</returns>
         /// 
-        public List<IntPoint> CollectActivePixels( )
+        public List<IntPoint> CollectActivePixels()
         {
-            return CollectActivePixels( new Rectangle( 0, 0, width, height ) );
+            return CollectActivePixels(new Rectangle(0, 0, _width, _height));
         }
 
         /// <summary>
@@ -626,51 +616,51 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns list of points, which have other than black color.</returns>
         ///
-        public List<IntPoint> CollectActivePixels( Rectangle rect )
+        public List<IntPoint> CollectActivePixels(Rectangle rect)
         {
-            List<IntPoint> pixels = new List<IntPoint>( );
+            var pixels = new List<IntPoint>();
 
-            int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
+            var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
 
             // correct rectangle
-            rect.Intersect( new Rectangle( 0, 0, width, height ) );
+            rect.Intersect(new Rectangle(0, 0, _width, _height));
 
-            int startX = rect.X;
-            int startY = rect.Y;
-            int stopX  = rect.Right;
-            int stopY  = rect.Bottom;
+            var startX = rect.X;
+            var startY = rect.Y;
+            var stopX = rect.Right;
+            var stopY = rect.Bottom;
 
             unsafe
             {
-                byte* basePtr = (byte*) imageData.ToPointer( );
+                var basePtr = (byte*)_imageData.ToPointer();
 
-                if ( ( pixelFormat == PixelFormat.Format16bppGrayScale ) || ( pixelSize > 4 ) )
+                if ((_pixelFormat == PixelFormat.Format16bppGrayScale) || (pixelSize > 4))
                 {
-                    int pixelWords = pixelSize >> 1;
+                    var pixelWords = pixelSize >> 1;
 
-                    for ( int y = startY; y < stopY; y++ )
+                    for (var y = startY; y < stopY; y++)
                     {
-                        ushort* ptr = (ushort*) ( basePtr + y * stride + startX * pixelSize );
+                        var ptr = (ushort*)(basePtr + y * _stride + startX * pixelSize);
 
-                        if ( pixelWords == 1 )
+                        if (pixelWords == 1)
                         {
                             // grayscale images
-                            for ( int x = startX; x < stopX; x++, ptr++ )
+                            for (var x = startX; x < stopX; x++, ptr++)
                             {
-                                if ( *ptr != 0 )
+                                if (*ptr != 0)
                                 {
-                                    pixels.Add( new IntPoint( x, y ) );
+                                    pixels.Add(new IntPoint(x, y));
                                 }
                             }
                         }
                         else
                         {
                             // color images
-                            for ( int x = startX; x < stopX; x++, ptr += pixelWords )
+                            for (var x = startX; x < stopX; x++, ptr += pixelWords)
                             {
-                                if ( ( ptr[RGB.R] != 0 ) || ( ptr[RGB.G] != 0 ) || ( ptr[RGB.B] != 0 ) )
+                                if ((ptr[RGB.R] != 0) || (ptr[RGB.G] != 0) || (ptr[RGB.B] != 0))
                                 {
-                                    pixels.Add( new IntPoint( x, y ) );
+                                    pixels.Add(new IntPoint(x, y));
                                 }
                             }
                         }
@@ -678,29 +668,29 @@ namespace ImageTemplateMatching
                 }
                 else
                 {
-                    for ( int y = startY; y < stopY; y++ )
+                    for (var y = startY; y < stopY; y++)
                     {
-                        byte* ptr = basePtr + y * stride + startX * pixelSize;
+                        var ptr = basePtr + y * _stride + startX * pixelSize;
 
-                        if ( pixelSize == 1 )
+                        if (pixelSize == 1)
                         {
                             // grayscale images
-                            for ( int x = startX; x < stopX; x++, ptr++ )
+                            for (var x = startX; x < stopX; x++, ptr++)
                             {
-                                if ( *ptr != 0 )
+                                if (*ptr != 0)
                                 {
-                                    pixels.Add( new IntPoint( x, y ) );
+                                    pixels.Add(new IntPoint(x, y));
                                 }
                             }
                         }
                         else
                         {
                             // color images
-                            for ( int x = startX; x < stopX; x++, ptr += pixelSize )
+                            for (var x = startX; x < stopX; x++, ptr += pixelSize)
                             {
-                                if ( ( ptr[RGB.R] != 0 ) || ( ptr[RGB.G] != 0 ) || ( ptr[RGB.B] != 0 ) )
+                                if ((ptr[RGB.R] != 0) || (ptr[RGB.G] != 0) || (ptr[RGB.B] != 0))
                                 {
-                                    pixels.Add( new IntPoint( x, y ) );
+                                    pixels.Add(new IntPoint(x, y));
                                 }
                             }
                         }
@@ -721,29 +711,29 @@ namespace ImageTemplateMatching
         /// <remarks><para><note>For images having 16 bpp per color plane, the method extends the specified color
         /// value to 16 bit by multiplying it by 256.</note></para></remarks>
         ///
-        public void SetPixels( List<IntPoint> coordinates, Color color )
+        public void SetPixels(List<IntPoint> coordinates, Color color)
         {
             unsafe
             {
-                int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-                byte* basePtr = (byte*) imageData.ToPointer( );
+                var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
+                var basePtr = (byte*)_imageData.ToPointer();
 
-                byte red   = color.R;
-                byte green = color.G;
-                byte blue  = color.B;
-                byte alpha = color.A;
+                var red = color.R;
+                var green = color.G;
+                var blue = color.B;
+                var alpha = color.A;
 
-                switch ( pixelFormat )
+                switch (_pixelFormat)
                 {
                     case PixelFormat.Format8bppIndexed:
                         {
-                            byte grayValue = (byte) ( 0.2125 * red + 0.7154 * green + 0.0721 * blue );
+                            var grayValue = (byte)(0.2125 * red + 0.7154 * green + 0.0721 * blue);
 
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    byte* ptr = basePtr + point.Y * stride + point.X;
+                                    var ptr = basePtr + point.Y * _stride + point.X;
                                     *ptr = grayValue;
                                 }
                             }
@@ -753,13 +743,11 @@ namespace ImageTemplateMatching
                     case PixelFormat.Format24bppRgb:
                     case PixelFormat.Format32bppRgb:
                         {
-
-
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    byte* ptr = basePtr + point.Y * stride + point.X * pixelSize;
+                                    var ptr = basePtr + point.Y * _stride + point.X * pixelSize;
                                     ptr[RGB.R] = red;
                                     ptr[RGB.G] = green;
                                     ptr[RGB.B] = blue;
@@ -770,11 +758,11 @@ namespace ImageTemplateMatching
 
                     case PixelFormat.Format32bppArgb:
                         {
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    byte* ptr = basePtr + point.Y * stride + point.X * pixelSize;
+                                    var ptr = basePtr + point.Y * _stride + point.X * pixelSize;
                                     ptr[RGB.R] = red;
                                     ptr[RGB.G] = green;
                                     ptr[RGB.B] = blue;
@@ -786,13 +774,13 @@ namespace ImageTemplateMatching
 
                     case PixelFormat.Format16bppGrayScale:
                         {
-                            ushort grayValue = (ushort) ( (ushort) ( 0.2125 * red + 0.7154 * green + 0.0721 * blue ) << 8 );
+                            var grayValue = (ushort)((ushort)(0.2125 * red + 0.7154 * green + 0.0721 * blue) << 8);
 
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride ) + point.X;
+                                    var ptr = (ushort*)(basePtr + point.Y * _stride) + point.X;
                                     *ptr = grayValue;
                                 }
                             }
@@ -801,15 +789,15 @@ namespace ImageTemplateMatching
 
                     case PixelFormat.Format48bppRgb:
                         {
-                            ushort red16   = (ushort) ( red   << 8 );
-                            ushort green16 = (ushort) ( green << 8 );
-                            ushort blue16  = (ushort) ( blue  << 8 );
+                            var red16 = (ushort)(red << 8);
+                            var green16 = (ushort)(green << 8);
+                            var blue16 = (ushort)(blue << 8);
 
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride + point.X * pixelSize );
+                                    var ptr = (ushort*)(basePtr + point.Y * _stride + point.X * pixelSize);
                                     ptr[RGB.R] = red16;
                                     ptr[RGB.G] = green16;
                                     ptr[RGB.B] = blue16;
@@ -820,16 +808,16 @@ namespace ImageTemplateMatching
 
                     case PixelFormat.Format64bppArgb:
                         {
-                            ushort red16   = (ushort) ( red   << 8 );
-                            ushort green16 = (ushort) ( green << 8 );
-                            ushort blue16  = (ushort) ( blue  << 8 );
-                            ushort alpha16 = (ushort) ( alpha << 8 );
+                            var red16 = (ushort)(red << 8);
+                            var green16 = (ushort)(green << 8);
+                            var blue16 = (ushort)(blue << 8);
+                            var alpha16 = (ushort)(alpha << 8);
 
-                            foreach ( IntPoint point in coordinates )
+                            foreach (var point in coordinates)
                             {
-                                if ( ( point.X >= 0 ) && ( point.Y >= 0 ) && ( point.X < width ) && ( point.Y < height ) )
+                                if ((point.X >= 0) && (point.Y >= 0) && (point.X < _width) && (point.Y < _height))
                                 {
-                                    ushort* ptr = (ushort*) ( basePtr + point.Y * stride + point.X * pixelSize );
+                                    var ptr = (ushort*)(basePtr + point.Y * _stride + point.X * pixelSize);
                                     ptr[RGB.R] = red16;
                                     ptr[RGB.G] = green16;
                                     ptr[RGB.B] = blue16;
@@ -840,7 +828,7 @@ namespace ImageTemplateMatching
                         break;
 
                     default:
-                        throw new UnsupportedImageFormatException( "The pixel format is not supported: " + pixelFormat );
+                        throw new UnsupportedImageFormatException("The pixel format is not supported: " + _pixelFormat);
                 }
             }
         }
@@ -854,9 +842,9 @@ namespace ImageTemplateMatching
         /// 
         /// <remarks><para>See <see cref="SetPixel(int, int, Color)"/> for more information.</para></remarks>
         ///
-        public void SetPixel( IntPoint point, Color color )
+        public void SetPixel(IntPoint point, Color color)
         {
-            SetPixel( point.X, point.Y, color );
+            SetPixel(point.X, point.Y, color);
         }
 
         /// <summary>
@@ -877,9 +865,9 @@ namespace ImageTemplateMatching
         /// </para>
         /// </remarks>
         /// 
-        public void SetPixel( int x, int y, Color color )
+        public void SetPixel(int x, int y, Color color)
         {
-            SetPixel( x, y, color.R, color.G, color.B, color.A );
+            SetPixel(x, y, color.R, color.G, color.B, color.A);
         }
 
         /// <summary>
@@ -899,25 +887,25 @@ namespace ImageTemplateMatching
         /// value to 16 bit by multiplying it by 256.</note></para>
         /// </remarks>
         /// 
-        public void SetPixel( int x, int y, byte value )
+        public void SetPixel(int x, int y, byte value)
         {
-            SetPixel( x, y, value, value, value, 255 );
+            SetPixel(x, y, value, value, value, 255);
         }
 
-        private void SetPixel( int x, int y, byte r, byte g, byte b, byte a )
+        private void SetPixel(int x, int y, byte r, byte g, byte b, byte a)
         {
-            if ( ( x >= 0 ) && ( y >= 0 ) && ( x < width ) && ( y < height ) )
+            if ((x >= 0) && (y >= 0) && (x < _width) && (y < _height))
             {
                 unsafe
                 {
-                    int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-                    byte* ptr = (byte*) imageData.ToPointer( ) + y * stride + x * pixelSize;
-                    ushort* ptr2 = (ushort*) ptr;
+                    var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
+                    var ptr = (byte*)_imageData.ToPointer() + y * _stride + x * pixelSize;
+                    var ptr2 = (ushort*)ptr;
 
-                    switch ( pixelFormat )
+                    switch (_pixelFormat)
                     {
                         case PixelFormat.Format8bppIndexed:
-                            *ptr = (byte) ( 0.2125 * r + 0.7154 * g + 0.0721 * b );
+                            *ptr = (byte)(0.2125 * r + 0.7154 * g + 0.0721 * b);
                             break;
 
                         case PixelFormat.Format24bppRgb:
@@ -935,24 +923,24 @@ namespace ImageTemplateMatching
                             break;
 
                         case PixelFormat.Format16bppGrayScale:
-                            *ptr2 = (ushort) ( (ushort) ( 0.2125 * r + 0.7154 * g + 0.0721 * b ) << 8 );
+                            *ptr2 = (ushort)((ushort)(0.2125 * r + 0.7154 * g + 0.0721 * b) << 8);
                             break;
 
                         case PixelFormat.Format48bppRgb:
-                            ptr2[RGB.R] = (ushort) ( r << 8 );
-                            ptr2[RGB.G] = (ushort) ( g << 8 );
-                            ptr2[RGB.B] = (ushort) ( b << 8 );
+                            ptr2[RGB.R] = (ushort)(r << 8);
+                            ptr2[RGB.G] = (ushort)(g << 8);
+                            ptr2[RGB.B] = (ushort)(b << 8);
                             break;
 
                         case PixelFormat.Format64bppArgb:
-                            ptr2[RGB.R] = (ushort) ( r << 8 );
-                            ptr2[RGB.G] = (ushort) ( g << 8 );
-                            ptr2[RGB.B] = (ushort) ( b << 8 );
-                            ptr2[RGB.A] = (ushort) ( a << 8 );
+                            ptr2[RGB.R] = (ushort)(r << 8);
+                            ptr2[RGB.G] = (ushort)(g << 8);
+                            ptr2[RGB.B] = (ushort)(b << 8);
+                            ptr2[RGB.A] = (ushort)(a << 8);
                             break;
 
                         default:
-                            throw new UnsupportedImageFormatException( "The pixel format is not supported: " + pixelFormat );
+                            throw new UnsupportedImageFormatException("The pixel format is not supported: " + _pixelFormat);
                     }
                 }
             }
@@ -968,9 +956,9 @@ namespace ImageTemplateMatching
         /// 
         /// <remarks><para>See <see cref="GetPixel(int, int)"/> for more information.</para></remarks>
         ///
-        public Color GetPixel( IntPoint point )
+        public Color GetPixel(IntPoint point)
         {
-            return GetPixel( point.X, point.Y );
+            return GetPixel(point.X, point.Y);
         }
 
         /// <summary>
@@ -992,42 +980,42 @@ namespace ImageTemplateMatching
         /// <exception cref="ArgumentOutOfRangeException">The specified pixel coordinate is out of image's bounds.</exception>
         /// <exception cref="UnsupportedImageFormatException">Pixel format of this image is not supported by the method.</exception>
         /// 
-        public Color GetPixel( int x, int y )
+        public Color GetPixel(int x, int y)
         {
-            if ( ( x < 0 ) || ( y < 0 ) )
+            if ((x < 0) || (y < 0))
             {
-                throw new ArgumentOutOfRangeException( "x", "The specified pixel coordinate is out of image's bounds." );
+                throw new ArgumentOutOfRangeException("x", "The specified pixel coordinate is out of image's bounds.");
             }
 
-            if ( ( x >= width ) || ( y >= height ) )
+            if ((x >= _width) || (y >= _height))
             {
-                throw new ArgumentOutOfRangeException( "y", "The specified pixel coordinate is out of image's bounds." );
+                throw new ArgumentOutOfRangeException("y", "The specified pixel coordinate is out of image's bounds.");
             }
 
-            Color color = new Color( );
+            var color = new Color();
 
             unsafe
             {
-                int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
-                byte* ptr = (byte*) imageData.ToPointer( ) + y * stride + x * pixelSize;
+                var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
+                var ptr = (byte*)_imageData.ToPointer() + y * _stride + x * pixelSize;
 
-                switch ( pixelFormat )
+                switch (_pixelFormat)
                 {
                     case PixelFormat.Format8bppIndexed:
-                        color = Color.FromArgb( *ptr, *ptr, *ptr );
+                        color = Color.FromArgb(*ptr, *ptr, *ptr);
                         break;
 
                     case PixelFormat.Format24bppRgb:
                     case PixelFormat.Format32bppRgb:
-                        color = Color.FromArgb( ptr[RGB.R], ptr[RGB.G], ptr[RGB.B] );
+                        color = Color.FromArgb(ptr[RGB.R], ptr[RGB.G], ptr[RGB.B]);
                         break;
 
                     case PixelFormat.Format32bppArgb:
-                        color = Color.FromArgb( ptr[RGB.A], ptr[RGB.R], ptr[RGB.G], ptr[RGB.B] );
+                        color = Color.FromArgb(ptr[RGB.A], ptr[RGB.R], ptr[RGB.G], ptr[RGB.B]);
                         break;
 
                     default:
-                        throw new UnsupportedImageFormatException( "The pixel format is not supported: " + pixelFormat );
+                        throw new UnsupportedImageFormatException("The pixel format is not supported: " + _pixelFormat);
                 }
             }
 
@@ -1060,39 +1048,39 @@ namespace ImageTemplateMatching
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image. Use Collect8bppPixelValues() method for
         /// images with 8 bpp channels.</exception>
         ///
-        public ushort[] Collect16bppPixelValues( List<IntPoint> points )
+        public ushort[] Collect16bppPixelValues(List<IntPoint> points)
         {
-            int pixelSize = Bitmap.GetPixelFormatSize( pixelFormat ) / 8;
+            var pixelSize = Bitmap.GetPixelFormatSize(_pixelFormat) / 8;
 
-            if ( ( pixelFormat == PixelFormat.Format8bppIndexed ) || ( pixelSize == 3 ) || ( pixelSize == 4 ) )
+            if ((_pixelFormat == PixelFormat.Format8bppIndexed) || (pixelSize == 3) || (pixelSize == 4))
             {
-                throw new UnsupportedImageFormatException( "Unsupported pixel format of the source image. Use Collect8bppPixelValues() method for it." );
+                throw new UnsupportedImageFormatException("Unsupported pixel format of the source image. Use Collect8bppPixelValues() method for it.");
             }
 
-            ushort[] pixelValues = new ushort[points.Count * ( ( pixelFormat == PixelFormat.Format16bppGrayScale ) ? 1 : 3 )];
+            var pixelValues = new ushort[points.Count * ((_pixelFormat == PixelFormat.Format16bppGrayScale) ? 1 : 3)];
 
             unsafe
             {
-                byte* basePtr = (byte*) imageData.ToPointer( );
+                var basePtr = (byte*)_imageData.ToPointer();
                 ushort* ptr;
 
-                if ( pixelFormat == PixelFormat.Format16bppGrayScale )
+                if (_pixelFormat == PixelFormat.Format16bppGrayScale)
                 {
-                    int i = 0;
+                    var i = 0;
 
-                    foreach ( IntPoint point in points )
+                    foreach (var point in points)
                     {
-                        ptr = (ushort*) ( basePtr + stride * point.Y + point.X * pixelSize );
+                        ptr = (ushort*)(basePtr + _stride * point.Y + point.X * pixelSize);
                         pixelValues[i++] = *ptr;
                     }
                 }
                 else
                 {
-                    int i = 0;
+                    var i = 0;
 
-                    foreach ( IntPoint point in points )
+                    foreach (var point in points)
                     {
-                        ptr = (ushort*) ( basePtr + stride * point.Y + point.X * pixelSize );
+                        ptr = (ushort*)(basePtr + _stride * point.Y + point.X * pixelSize);
                         pixelValues[i++] = ptr[RGB.R];
                         pixelValues[i++] = ptr[RGB.G];
                         pixelValues[i++] = ptr[RGB.B];

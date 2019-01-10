@@ -6,11 +6,10 @@
 // contacts@aforgenet.com
 //
 
+using System;
+
 namespace ImageTemplateMatching
 {
-    using System;
-    using System.Runtime.InteropServices;
-
     /// <summary>
     /// Set of systems tools.
     /// </summary>
@@ -36,11 +35,11 @@ namespace ImageTemplateMatching
         /// not provide any way to copy unmanaged blocks, but provides only methods to
         /// copy from unmanaged memory to managed memory and vise versa.</para></remarks>
         ///
-        public static IntPtr CopyUnmanagedMemory( IntPtr dst, IntPtr src, int count )
+        public static IntPtr CopyUnmanagedMemory(IntPtr dst, IntPtr src, int count)
         {
             unsafe
             {
-                CopyUnmanagedMemory( (byte*) dst.ToPointer( ), (byte*) src.ToPointer( ), count );
+                CopyUnmanagedMemory((byte*)dst.ToPointer(), (byte*)src.ToPointer(), count);
             }
             return dst;
         }
@@ -59,31 +58,27 @@ namespace ImageTemplateMatching
         /// not provide any way to copy unmanaged blocks, but provides only methods to
         /// copy from unmanaged memory to managed memory and vise versa.</para></remarks>
         /// 
-        public static unsafe byte* CopyUnmanagedMemory( byte* dst, byte* src, int count )
+        public static unsafe byte* CopyUnmanagedMemory(byte* dst, byte* src, int count)
         {
-#if !MONO
-            return memcpy( dst, src, count );
-#else
-            int countUint = count >> 2;
-            int countByte = count & 3;
+            var countUint = count >> 2;
+            var countByte = count & 3;
 
-            uint* dstUint = (uint*) dst;
-            uint* srcUint = (uint*) src;
+            var dstUint = (uint*)dst;
+            var srcUint = (uint*)src;
 
-            while ( countUint-- != 0 )
+            while (countUint-- != 0)
             {
                 *dstUint++ = *srcUint++;
             }
 
-            byte* dstByte = (byte*) dstUint;
-            byte* srcByte = (byte*) srcUint;
+            var dstByte = (byte*)dstUint;
+            var srcByte = (byte*)srcUint;
 
-            while ( countByte-- != 0 )
+            while (countByte-- != 0)
             {
                 *dstByte++ = *srcByte++;
             }
             return dst;
-#endif
         }
 
         /// <summary>
@@ -96,11 +91,11 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Return's value of <paramref name="dst"/> - pointer to destination.</returns>
         /// 
-        public static IntPtr SetUnmanagedMemory( IntPtr dst, int filler, int count )
+        public static IntPtr SetUnmanagedMemory(IntPtr dst, int filler, int count)
         {
             unsafe
             {
-                SetUnmanagedMemory( (byte*) dst.ToPointer( ), filler, count );
+                SetUnmanagedMemory((byte*)dst.ToPointer(), filler, count);
             }
             return dst;
         }
@@ -115,50 +110,29 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Return's value of <paramref name="dst"/> - pointer to destination.</returns>
         /// 
-        public static unsafe byte* SetUnmanagedMemory( byte* dst, int filler, int count )
+        public static unsafe byte* SetUnmanagedMemory(byte* dst, int filler, int count)
         {
-#if !MONO
-            return memset( dst, filler, count );
-#else
-            int countUint = count >> 2;
-            int countByte = count & 3;
+            var countUint = count >> 2;
+            var countByte = count & 3;
 
-            byte fillerByte = (byte) filler;
-            uint fiilerUint = (uint) filler | ( (uint) filler << 8 ) |
-                                              ( (uint) filler << 16 );// |
-                                              //( (uint) filler << 24 );
+            var fillerByte = (byte)filler;
+            var fiilerUint = (uint)filler | ((uint)filler << 8) |
+                                              ((uint)filler << 16);
 
-            uint* dstUint = (uint*) dst;
+            var dstUint = (uint*)dst;
 
-            while ( countUint-- != 0 )
+            while (countUint-- != 0)
             {
                 *dstUint++ = fiilerUint;
             }
 
-            byte* dstByte = (byte*) dstUint;
+            var dstByte = (byte*)dstUint;
 
-            while ( countByte-- != 0 )
+            while (countByte-- != 0)
             {
                 *dstByte++ = fillerByte;
             }
             return dst;
-#endif
         }
-
-
-#if !MONO
-        // Win32 memory copy function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
-        private static unsafe extern byte* memcpy(
-            byte* dst,
-            byte* src,
-            int count );
-        // Win32 memory set function
-        [DllImport( "ntdll.dll", CallingConvention = CallingConvention.Cdecl )]
-        private static unsafe extern byte* memset(
-            byte* dst,
-            int filler,
-            int count );
-#endif
     }
 }

@@ -6,10 +6,10 @@
 // contacts@aforgenet.com
 //
 
+using System;
+
 namespace ImageTemplateMatching
 {
-    using System;
-
     /// <summary>
     /// Structure for representing a pair of coordinates of integer type.
     /// </summary>
@@ -36,13 +36,13 @@ namespace ImageTemplateMatching
         /// X coordinate.
         /// </summary> 
         /// 
-        public int X;
+        public int X { get; set; }
 
         /// <summary> 
         /// Y coordinate.
         /// </summary> 
         /// 
-        public int Y;
+        public int Y { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IntPoint"/> structure.
@@ -51,10 +51,10 @@ namespace ImageTemplateMatching
         /// <param name="x">X axis coordinate.</param>
         /// <param name="y">Y axis coordinate.</param>
         /// 
-        public IntPoint( int x, int y )
+        public IntPoint(int x, int y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
 
         /// <summary>
@@ -66,12 +66,12 @@ namespace ImageTemplateMatching
         /// <returns>Returns Euclidean distance between this point and
         /// <paramref name="anotherPoint"/> points.</returns>
         /// 
-        public float DistanceTo( IntPoint anotherPoint )
+        public float DistanceTo(IntPoint anotherPoint)
         {
-            int dx = X - anotherPoint.X;
-            int dy = Y - anotherPoint.Y;
+            var dx = X - anotherPoint.X;
+            var dy = Y - anotherPoint.Y;
 
-            return (float) System.Math.Sqrt( dx * dx + dy * dy );
+            return (float)System.Math.Sqrt(dx * dx + dy * dy);
         }
 
         /// <summary>
@@ -84,9 +84,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to sum of corresponding
         /// coordinates of specified points.</returns>
         /// 
-        public static IntPoint operator +( IntPoint point1, IntPoint point2 )
+        public static IntPoint operator +(IntPoint point1, IntPoint point2)
         {
-            return new IntPoint( point1.X + point2.X, point1.Y + point2.Y );
+            return new IntPoint(point1.X + point2.X, point1.Y + point2.Y);
         }
 
         /// <summary>
@@ -99,9 +99,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to sum of corresponding
         /// coordinates of specified points.</returns>
         /// 
-        public static IntPoint Add( IntPoint point1, IntPoint point2 )
+        public static IntPoint Add(IntPoint point1, IntPoint point2)
         {
-            return new IntPoint( point1.X + point2.X, point1.Y + point2.Y );
+            return new IntPoint(point1.X + point2.X, point1.Y + point2.Y);
         }
 
         /// <summary>
@@ -114,9 +114,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to difference of corresponding
         /// coordinates of specified points.</returns>
         ///
-        public static IntPoint operator -( IntPoint point1, IntPoint point2 )
+        public static IntPoint operator -(IntPoint point1, IntPoint point2)
         {
-            return new IntPoint( point1.X - point2.X, point1.Y - point2.Y );
+            return new IntPoint(point1.X - point2.X, point1.Y - point2.Y);
         }
 
         /// <summary>
@@ -129,9 +129,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to difference of corresponding
         /// coordinates of specified points.</returns>
         ///
-        public static IntPoint Subtract( IntPoint point1, IntPoint point2 )
+        public static IntPoint Subtract(IntPoint point1, IntPoint point2)
         {
-            return new IntPoint( point1.X - point2.X, point1.Y - point2.Y );
+            return new IntPoint(point1.X - point2.X, point1.Y - point2.Y);
         }
 
         /// <summary>
@@ -144,9 +144,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point increased by specified value.</returns>
         /// 
-        public static IntPoint operator +( IntPoint point, int valueToAdd )
+        public static IntPoint operator +(IntPoint point, int valueToAdd)
         {
-            return new IntPoint( point.X + valueToAdd, point.Y + valueToAdd );
+            return new IntPoint(point.X + valueToAdd, point.Y + valueToAdd);
         }
 
         /// <summary>
@@ -159,9 +159,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point increased by specified value.</returns>
         /// 
-        public static IntPoint Add( IntPoint point, int valueToAdd )
+        public static IntPoint Add(IntPoint point, int valueToAdd)
         {
-            return new IntPoint( point.X + valueToAdd, point.Y + valueToAdd );
+            return new IntPoint(point.X + valueToAdd, point.Y + valueToAdd);
         }
 
         /// <summary>
@@ -174,9 +174,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point decreased by specified value.</returns>
         /// 
-        public static IntPoint operator -( IntPoint point, int valueToSubtract )
+        public static IntPoint operator -(IntPoint point, int valueToSubtract)
         {
-            return new IntPoint( point.X - valueToSubtract, point.Y - valueToSubtract );
+            return new IntPoint(point.X - valueToSubtract, point.Y - valueToSubtract);
         }
 
         /// <summary>
@@ -189,9 +189,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point decreased by specified value.</returns>
         /// 
-        public static IntPoint Subtract( IntPoint point, int valueToSubtract )
+        public static IntPoint Subtract(IntPoint point, int valueToSubtract)
         {
-            return new IntPoint( point.X - valueToSubtract, point.Y - valueToSubtract );
+            return new IntPoint(point.X - valueToSubtract, point.Y - valueToSubtract);
         }
 
         /// <summary>
@@ -204,9 +204,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point multiplied by specified value.</returns>
         ///
-        public static IntPoint operator *( IntPoint point, int factor )
+        public static IntPoint operator *(IntPoint point, int factor)
         {
-            return new IntPoint( point.X * factor, point.Y * factor );
+            return new IntPoint(point.X * factor, point.Y * factor);
         }
 
         /// <summary>
@@ -219,9 +219,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point multiplied by specified value.</returns>
         ///
-        public static IntPoint Multiply( IntPoint point, int factor )
+        public static IntPoint Multiply(IntPoint point, int factor)
         {
-            return new IntPoint( point.X * factor, point.Y * factor );
+            return new IntPoint(point.X * factor, point.Y * factor);
         }
 
         /// <summary>
@@ -234,9 +234,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point divided by specified value.</returns>
         /// 
-        public static IntPoint operator /( IntPoint point, int factor )
+        public static IntPoint operator /(IntPoint point, int factor)
         {
-            return new IntPoint( point.X / factor, point.Y / factor );
+            return new IntPoint(point.X / factor, point.Y / factor);
         }
 
         /// <summary>
@@ -249,9 +249,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns new point which coordinates equal to coordinates of
         /// the specified point divided by specified value.</returns>
         /// 
-        public static IntPoint Divide( IntPoint point, int factor )
+        public static IntPoint Divide(IntPoint point, int factor)
         {
-            return new IntPoint( point.X / factor, point.Y / factor );
+            return new IntPoint(point.X / factor, point.Y / factor);
         }
 
         /// <summary>
@@ -264,9 +264,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns <see langword="true"/> if coordinates of specified
         /// points are equal.</returns>
         ///
-        public static bool operator ==( IntPoint point1, IntPoint point2 )
+        public static bool operator ==(IntPoint point1, IntPoint point2)
         {
-            return ( ( point1.X == point2.X ) && ( point1.Y == point2.Y ) );
+            return ((point1.X == point2.X) && (point1.Y == point2.Y));
         }
 
         /// <summary>
@@ -279,9 +279,9 @@ namespace ImageTemplateMatching
         /// <returns>Returns <see langword="true"/> if coordinates of specified
         /// points are not equal.</returns>
         ///
-        public static bool operator !=( IntPoint point1, IntPoint point2 )
+        public static bool operator !=(IntPoint point1, IntPoint point2)
         {
-            return ( ( point1.X != point2.X ) || ( point1.Y != point2.Y ) );
+            return ((point1.X != point2.X) || (point1.Y != point2.Y));
         }
 
         /// <summary>
@@ -292,9 +292,9 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Return <see langword="true"/> if objects are equal.</returns>
         /// 
-        public override bool Equals( object obj )
+        public override bool Equals(object obj)
         {
-            return ( obj is IntPoint ) ? ( this == (IntPoint) obj ) : false;
+            return (obj is IntPoint) ? (this == (IntPoint)obj) : false;
         }
 
         /// <summary>
@@ -303,9 +303,9 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns the hash code for this instance.</returns>
         /// 
-        public override int GetHashCode( )
+        public override int GetHashCode()
         {
-            return X.GetHashCode( ) + Y.GetHashCode( );
+            return X.GetHashCode() + Y.GetHashCode();
         }
 
         /// <summary>
@@ -314,9 +314,9 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns string, which contains values of the point in readable form.</returns>
         ///
-        public override string ToString( )
+        public override string ToString()
         {
-            return string.Format( System.Globalization.CultureInfo.InvariantCulture, "{0}, {1}", X, Y );
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}, {1}", X, Y);
         }
 
         /// <summary>
@@ -326,9 +326,10 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns point's distance from (0, 0) point.</returns>
         /// 
-        public float EuclideanNorm( )
+        public float EuclideanNorm()
         {
-            return (float) System.Math.Sqrt( X * X + Y * Y );
+            return (float)System.Math.Sqrt(X * X + Y * Y);
         }
-    }    
+    }
 }
+

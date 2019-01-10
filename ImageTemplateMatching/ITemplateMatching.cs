@@ -6,12 +6,11 @@
 // andrew.kirillov@aforgenet.com
 //
 
+using System.Drawing;
+using System.Drawing.Imaging;
+
 namespace ImageTemplateMatching
 {
-    using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
-
     /// <summary>
     /// Template matching algorithm's interface.
     /// </summary>
@@ -32,7 +31,7 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns array of found matchings.</returns>
         /// 
-        TemplateMatch[] ProcessImage( Bitmap image, Bitmap template, Rectangle searchZone );
+        TemplateMatch[] ProcessImage(Bitmap image, Bitmap template, Rectangle searchZone);
 
         /// <summary>
         /// Process image looking for matchings with specified template.
@@ -44,7 +43,7 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns array of found matchings.</returns>
         /// 
-        TemplateMatch[] ProcessImage( BitmapData imageData, BitmapData templateData, Rectangle searchZone );
+        TemplateMatch[] ProcessImage(BitmapData imageData, BitmapData templateData, Rectangle searchZone);
 
         /// <summary>
         /// Process image looking for matchings with specified template.
@@ -56,6 +55,6 @@ namespace ImageTemplateMatching
         /// 
         /// <returns>Returns array of found matchings.</returns>
         /// 
-        TemplateMatch[] ProcessImage( UnmanagedImage image, UnmanagedImage template, Rectangle searchZone );
+        TemplateMatch[] ProcessImage(UnmanagedImage image, UnmanagedImage template, Rectangle searchZone);
     }
 }
