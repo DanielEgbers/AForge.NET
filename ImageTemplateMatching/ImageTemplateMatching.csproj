@@ -9,6 +9,8 @@
     <Authors>Daniel Egbers</Authors>
     <Description>Simple image template matching based on AForge.NET by Andrew Kirillov</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/DanielEgbers/ImageTemplateMatching</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
