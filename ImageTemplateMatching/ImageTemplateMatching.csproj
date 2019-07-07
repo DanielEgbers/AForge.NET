@@ -3,9 +3,12 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <DebugType>Full</DebugType>
-    <Version>0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>Full</DebugType>
+    <Version>0.1-alpha</Version>
+    <Authors>Daniel Egbers</Authors>
+    <Description>Simple image template matching based on AForge.NET by Andrew Kirillov</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
